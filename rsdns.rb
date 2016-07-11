@@ -57,7 +57,7 @@ class Rsdns
 
   def domainlist
     if @@opts[:domains]
-    domain_list = File.readlines(@@opts[:domains]).map(&:chomp)
+    domain_list = File.readlines(@@opts[:domains]).map(&:chomp &&:strip)
       domain_list.each do |domain|
         @domains << domain.chomp
       end
@@ -90,7 +90,7 @@ class Rsdns
 
   def createsubs
     if @@opts[:subdomains]
-    subs = File.readlines(@@opts[:subdomains]).map(&:chomp).sort
+    subs = File.readlines(@@opts[:subdomains]).map(&:chomp &&:strip).sort
       subs.each do |sub|
         @domains.each do |domain|
           @full << "#{sub}.#{domain}"
