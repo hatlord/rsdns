@@ -6,6 +6,7 @@ require 'resolv'
 require 'tty-command'
 require 'logger'
 require 'threadify'
+require 'securerandom'
 
 class Rsdns
 
@@ -26,6 +27,8 @@ class Rsdns
     @cmd = TTY::Command.new(output: @log)
     @time = Time.now.strftime("%d%b%Y_%H%M%S")
     @axfr_file = "axfr_#{@time}.txt"
+    @wildcard = SecureRandom.hex
+    @remove = []
 
   end
 
@@ -59,7 +62,7 @@ class Rsdns
     if @@opts[:domains]
     domain_list = File.readlines(@@opts[:domains]).map(&:chomp &&:strip)
       domain_list.each do |domain|
-        @domains << domain.chomp
+        @domains << domain.chomp #this chomp statement should be removed
       end
     end
   end
@@ -86,6 +89,26 @@ class Rsdns
 
   def remove_domain
     @axfr_dom.each { |a| @nsrecords << [a[0], a[1]] }
+  end
+
+  def wildcard_test
+    if @@opts[:subdomains]
+    resolver = Resolv::DNS.new(:nameserver => [@@opts[:dns_server], '8.8.4.4'])
+    
+    @domains.each do |domain|
+      canary = "#{@wildcard}.#{domain}"
+        resolver.each_address(canary) { |addr| @remove << domain if !addr.nil? } rescue ""
+    end
+  end
+
+  def remove_wildcard
+    if @remove.size > 0
+      @remove.each do |dom|
+        puts "#{dom} appears to be a wildcard domain, removing from further tests - Please manually check yourself!!".upcase.red.bold
+          @domains = @domains - @remove
+        end
+      end
+    end
   end
 
   def createsubs
@@ -204,6 +227,8 @@ run.domainlist
 run.mx
 run.ns
 run.remove_domain
+run.wildcard_test
+run.remove_wildcard
 run.createsubs
 run.subdomains
 run.axfr
