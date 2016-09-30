@@ -233,9 +233,9 @@ run.createsubs
 run.subdomains
 run.axfr
 
-print = Printer.new(run)
-print.printdom
-print.printns
-print.printmx
-print.printsubs
-print.printaxfr
+printme = Printer.new(run)
+printme.printdom
+printme.printns
+printme.printmx
+printme.printsubs
+printme.printaxfr
