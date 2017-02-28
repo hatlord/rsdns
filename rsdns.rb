@@ -7,6 +7,7 @@ require 'tty-command'
 require 'logger'
 require 'threadify'
 require 'securerandom'
+require 'csv'
 
 class Rsdns
 
@@ -157,7 +158,7 @@ class Printer
   def initialize(run)
     @run = run
   end
-
+  
   def printns
     if !@run.nsrecords.empty?
     puts "\nNS Records".blue.bold
@@ -165,6 +166,7 @@ class Printer
     splitns = @run.nsrecords.each_slice(2).to_a
       splitns = splitns.uniq { |n| n[0] }
         splitns.each do |n|
+          puts n
           puts "#{n[0].join("\t")}\t\t#{n[1].join("\t")}" rescue puts n.join("\t")
         end
       else puts "\nNo Name Servers Found".red
@@ -213,9 +215,45 @@ class Printer
     puts @run.axfr_print
     if File.exist?(@run.axfr_file)
       puts "Full transfer output written to axfr_#{@run.time}.txt".upcase.white.on_blue
+      end
     end
   end
-end
+
+  def create_file
+    Dir.mkdir("#{Dir.home}/Documents/rsdns_out/") unless File.exists?("#{Dir.home}/Documents/rsdns_out/")
+    @file    = "rsdns_#{Time.now.strftime("%d%b%Y_%H%M%S")}"
+    @csvfile = File.new("#{Dir.home}/Documents/rsdns_out/#{@file}.csv", 'w+')
+    puts "Output written to #{@csvfile.path}".light_blue.bold
+  end
+  
+  def output_data
+    CSV.open(@csvfile, 'w+') do |csv|
+      if @run.domains
+        csv << ["DOMAINS"]
+          @run.domains.each do |domain|
+            csv << [domain]
+          end
+      end
+      if !@run.nsrecords.empty?
+        csv << ["\nNAME SERVERS"]
+          @run.nsrecords.each do |ns|
+            csv << ns
+          end
+      end
+      if !@run.mxrecords.empty?
+        csv << ["\nMX RECORDS"]
+          @run.mxrecords.each do |mx|
+            csv << mx
+          end
+      end
+      if @run.resolved and !@run.resolved.empty?
+        csv << ["\nSUBDOMAINS"]
+          @run.resolved.each do |subs|
+            csv << subs
+          end
+      end
+    end    
+  end
  
 end
 
@@ -239,3 +277,5 @@ printme.printns
 printme.printmx
 printme.printsubs
 printme.printaxfr
+printme.create_file
+printme.output_data
