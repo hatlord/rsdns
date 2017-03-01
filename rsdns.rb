@@ -129,7 +129,7 @@ class Rsdns
 
     resolver = Resolv::DNS.new(:nameserver => [@@opts[:dns_server], '8.8.4.4']) 
       @full.threadify do |name|
-        resolver.each_address(name) { |addr| puts "#{name}\t#{addr}" if !addr.nil? ; @resolved << [name, addr] if !addr.nil? } rescue ""
+        resolver.each_address(name) { |addr| puts "#{name}\t#{addr}" if !addr.nil? ; @resolved << [name, addr] if !addr.nil? } rescue [name, "NO SUBS DISCOVERED"]
         end   
       puts "Finished subdomain enumeration at #{Time.now.strftime("%H:%M:%S")}".green.bold
     end
