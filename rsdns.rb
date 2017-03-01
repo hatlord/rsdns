@@ -72,7 +72,7 @@ class Rsdns
     @domains.each do |d|
       Resolv::DNS.open do |dns|
         mx = dns.getresources d, Resolv::DNS::Resource::IN::MX
-        mx.map! { |m| [m.exchange.to_s, IPSocket::getaddress(m.exchange.to_s)] } rescue mx.map! { |m|  "" }
+        mx.map! { |m| [m.exchange.to_s, IPSocket::getaddress(m.exchange.to_s)] } rescue mx.map! { |m|  [d, "NO MX RECORD FOR DOMAIN"] }
         mx.each { |m| @mxrecords << m }
       end
     end
