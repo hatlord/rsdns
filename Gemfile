@@ -1,7 +1,7 @@
 #GEMS
 source "https://rubygems.org"
 
-gem 'trollop'
+gem 'optimist'
 gem 'colorize'
 gem 'net-dns'
 gem 'tty-command'
